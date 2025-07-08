@@ -70,11 +70,18 @@
     margin-bottom: 25px;
     display: flex;
     flex-wrap: wrap;
-    gap: 18px;
-    align-items: center;
+    gap: 18px 24px;
     justify-content: center;
+    align-items: center;
   }
-  .form-container label {
+  .form-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 160px;
+  }
+  .form-group label {
+    white-space: nowrap;
     font-weight: 600;
     color: #ff6600;
   }
@@ -181,6 +188,15 @@
   button#btnZerarSemana:hover {
     background-color: #833300;
   }
+  #sidebar {
+    flex: 1;
+    background: #fff8f0;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(255, 102, 0, 0.2);
+    padding: 20px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
   #sidebar h2 {
     color: #a34100;
     margin-top: 0;
@@ -255,14 +271,20 @@
 <main>
   <section id="content">
     <div class="form-container">
-      <label for="diaSemana">Dia da Semana:</label>
-      <select id="diaSemana"></select>
+      <div class="form-group">
+        <label for="diaSemana">Dia da Semana:</label>
+        <select id="diaSemana"></select>
+      </div>
 
-      <label for="valorVenda">Valor Venda (R$):</label>
-      <input type="number" id="valorVenda" min="0" step="0.01" value="0" />
+      <div class="form-group">
+        <label for="valorVenda">Valor Venda (R$):</label>
+        <input type="number" id="valorVenda" min="0" step="0.01" value="0" />
+      </div>
 
-      <label for="qtdPedidos">Quantidade Pedidos:</label>
-      <input type="number" id="qtdPedidos" min="0" step="1" value="0" />
+      <div class="form-group">
+        <label for="qtdPedidos">Quantidade Pedidos:</label>
+        <input type="number" id="qtdPedidos" min="0" step="1" value="0" />
+      </div>
 
       <button id="btnSalvar">Salvar</button>
       <button id="btnZerarSemana" title="Zerar e salvar os dados da semana">Zerar Semana</button>
@@ -306,10 +328,8 @@
 <script>
   const diasSemanaNomes = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
 
-  // Dados da semana atual
   let dadosVendas = JSON.parse(localStorage.getItem('dadosVendas')) || Array(7).fill(null).map(() => ({ valor: 0, pedidos: 0, data: null }));
 
-  // Semanas arquivadas
   let semanasArquivadas = JSON.parse(localStorage.getItem('semanasArquivadas')) || [];
 
   const diaSemanaSelect = document.getElementById('diaSemana');
@@ -324,27 +344,25 @@
   const ctx = document.getElementById('graficoVendas').getContext('2d');
   let grafico;
 
-  // Helper para formatar data dd/mm
   function formatarData(timestamp) {
     if (!timestamp) return '-';
     const d = new Date(timestamp);
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
   }
-  // Helper para formatar data completa (ex: julho 2025)
+
   function formatarMesAno(date) {
     return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   }
 
-  // Calcula a data do domingo da semana base atual
   function calcularDomingoBase() {
     const hoje = new Date();
-    const diaHoje = hoje.getDay(); // 0 (domingo) a 6 (sábado)
+    const diaHoje = hoje.getDay();
     const domingo = new Date(hoje);
     domingo.setDate(hoje.getDate() - diaHoje);
     domingo.setHours(0,0,0,0);
     return domingo;
   }
-  // Calcula a data real do dia da semana (segunda=0) para exibir
+
   function dataDoDiaSemana(diaIndex) {
     const domingo = calcularDomingoBase();
     const dataDia = new Date(domingo);
@@ -352,7 +370,6 @@
     return dataDia;
   }
 
-  // Preenche o select com dias da semana com data
   function preencherSelectDias() {
     diaSemanaSelect.innerHTML = '';
     for(let i=0; i<7; i++) {
@@ -365,7 +382,6 @@
     }
   }
 
-  // Atualiza totais, tabela e gráfico
   function atualizarPainel() {
     const valores = dadosVendas.map(d => d.valor);
     const pedidos = dadosVendas.map(d => d.pedidos);
@@ -375,7 +391,6 @@
     totalSemanaEl.textContent = totalValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     totalPedidosEl.textContent = totalPedidos;
 
-    // Atualiza tabela
     tabelaVendasEl.innerHTML = '';
     for(let i=0; i<7; i++) {
       const dataFormatada = formatarData(dadosVendas[i].data) === '-' ? dataDoDiaSemana(i).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) : formatarData(dadosVendas[i].data);
@@ -390,7 +405,6 @@
       tabelaVendasEl.appendChild(tr);
     }
 
-    // Atualiza gráfico
     if(grafico) grafico.destroy();
     grafico = new Chart(ctx, {
       type: 'bar',
@@ -418,14 +432,12 @@
     });
   }
 
-  // Carrega dados no formulário ao mudar o dia
   function carregarFormulario() {
     const index = +diaSemanaSelect.value;
     valorVendaInput.value = dadosVendas[index].valor.toFixed(2);
     qtdPedidosInput.value = dadosVendas[index].pedidos;
   }
 
-  // Atualiza a lista lateral com semanas arquivadas
   function atualizarListaSemanas() {
     listaSemanasEl.innerHTML = '';
     if(semanasArquivadas.length === 0) {
@@ -449,7 +461,6 @@
     });
   }
 
-  // Salvar dados e atualizar painel
   btnSalvar.addEventListener('click', () => {
     const index = +diaSemanaSelect.value;
     const valor = parseFloat(valorVendaInput.value) || 0;
@@ -462,10 +473,8 @@
     alert(`Dados do ${diasSemanaNomes[index]} salvos!`);
   });
 
-  // Zerar toda a semana salvando os dados atuais como semana arquivada
   btnZerarSemana.addEventListener('click', () => {
     if(confirm('Quer zerar e arquivar os dados atuais da semana?')) {
-      // Salva a semana arquivada com data base do domingo
       const dataInicio = calcularDomingoBase().getTime();
       const totalValor = dadosVendas.reduce((acc, d) => acc + d.valor, 0);
       const totalPedidos = dadosVendas.reduce((acc, d) => acc + d.pedidos, 0);
@@ -475,23 +484,21 @@
         total: totalValor,
         pedidos: totalPedidos
       });
-      // Limita a lista a 10 semanas arquivadas para não ficar gigante (pode ajustar)
       if (semanasArquivadas.length > 10) semanasArquivadas.pop();
 
       localStorage.setItem('semanasArquivadas', JSON.stringify(semanasArquivadas));
 
-      // Zera os dados atuais
       dadosVendas = Array(7).fill(null).map(() => ({ valor: 0, pedidos: 0, data: null }));
       localStorage.setItem('dadosVendas', JSON.stringify(dadosVendas));
 
       atualizarPainel();
       carregarFormulario();
       atualizarListaSemanas();
-      alert('Semana arquivada e dados zerados para nova semana!');
+      alert('Semana zerada e arquivada com sucesso!');
+      preencherSelectDias();
     }
   });
 
-  // Apagar um dia específico
   tabelaVendasEl.addEventListener('click', e => {
     if(e.target.classList.contains('delete-btn')) {
       const dia = +e.target.dataset.dia;
@@ -504,7 +511,6 @@
     }
   });
 
-  // Remover semana arquivada da lista lateral
   listaSemanasEl.addEventListener('click', e => {
     if(e.target.classList.contains('semana-remove-btn')) {
       const i = +e.target.dataset.index;
@@ -515,6 +521,8 @@
       }
     }
   });
+
+  diaSemanaSelect.addEventListener('change', carregarFormulario);
 
   // Inicialização
   preencherSelectDias();
