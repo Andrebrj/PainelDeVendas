@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Painel de Vendas - Joana Salgados</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f5e9d9, #f9c49a);
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  main {
+    flex: 1;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  #content {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #sidebar {
+    flex: 1;
+    background: #fff8f0;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(255, 102, 0, 0.2);
+    padding: 20px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto 10px;
+  }
+  header img {
+    height: 50px;
+    border-radius: 10px;
+    object-fit: contain;
+    box-shadow: 0 0 8px rgba(255, 102, 0, 0.5);
+    background: white;
+    padding: 6px;
+  }
+  header h1 {
+    font-weight: 700;
+    font-size: 1.9rem;
+    margin: 0;
+    color: #a34100;
+  }
+  .form-container {
+    background: #fff;
+    padding: 18px 22px;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(255, 102, 0, 0.25);
+    width: 100%;
+    margin-bottom: 25px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: center;
+    justify-content: center;
+  }
+  .form-container label {
+    font-weight: 600;
+    color: #ff6600;
+  }
+  select, input[type="number"] {
+    padding: 8px 12px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1.8px solid #ff6600;
+    width: 130px;
+    text-align: center;
+  }
+  button {
+    background-color: #ff6600;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 26px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background-color 0.25s;
+  }
+  button:hover {
+    background-color: #e65c00;
+  }
+  .totals {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 30px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .card {
+    background: #fff;
+    padding: 28px 38px;
+    border-radius: 16px;
+    box-shadow: 0 6px 30px rgba(255, 102, 0, 0.28);
+    text-align: center;
+    flex: 1 1 210px;
+    min-width: 200px;
+  }
+  .card h2 {
+    font-size: 2.4rem;
+    margin: 0 0 12px;
+    color: #ff6600;
+  }
+  .card p {
+    margin: 0;
+    font-weight: 600;
+    color: #5a3400;
+  }
+  canvas {
+    max-width: 100%;
+    margin-bottom: 38px;
+    border-radius: 16px;
+    box-shadow: 0 6px 25px rgba(255, 102, 0, 0.2);
+    background: white;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 30px rgba(255, 102, 0, 0.25);
+    margin-bottom: 45px;
+  }
+  th, td {
+    padding: 14px 18px;
+    text-align: center;
+    border-bottom: 1px solid #f0e6da;
+    font-weight: 600;
+    color: #5a3400;
+  }
+  th {
+    background-color: #ff6600;
+    color: white;
+    font-weight: 700;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  button.delete-btn {
+    background-color: #e63946;
+    padding: 7px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: background-color 0.3s;
+    border: none;
+    color: white;
+    cursor: pointer;
+  }
+  button.delete-btn:hover {
+    background-color: #b82e35;
+  }
+  button#btnZerarSemana {
+    background-color: #b34700;
+    margin-top: 0;
+    padding: 10px 18px;
+    font-weight: 600;
+  }
+  button#btnZerarSemana:hover {
+    background-color: #833300;
+  }
+  #sidebar h2 {
+    color: #a34100;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+  }
+  #sidebar .semana-item {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(255, 102, 0, 0.15);
+    margin-bottom: 15px;
+    padding: 12px 15px;
+    font-weight: 600;
+    color: #5a3400;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #sidebar .semana-info {
+    display: flex;
+    flex-direction: column;
+  }
+  #sidebar .semana-data {
+    font-size: 0.9rem;
+    color: #a3490060;
+  }
+  #sidebar .semana-total {
+    font-size: 1rem;
+    color: #ff6600;
+  }
+  #sidebar .semana-pedidos {
+    font-size: 0.95rem;
+    color: #cc5500;
+  }
+  #sidebar .semana-remove-btn {
+    background-color: #e63946;
+    border: none;
+    color: white;
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  #sidebar .semana-remove-btn:hover {
+    background-color: #b82e35;
+  }
+  @media (max-width: 900px) {
+    main {
+      flex-direction: column;
+      padding: 15px;
+    }
+    #sidebar {
+      max-height: none;
+      margin-top: 25px;
+      padding: 15px;
+      width: 100%;
+      order: 2;
+    }
+    #content {
+      order: 1;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <img src="https://i.imgur.com/gVRvV7G.jpeg" alt="Logo Joana Salgados" />
+  <h1>Painel de Vendas</h1>
+</header>
+
+<main>
+  <section id="content">
+    <div class="form-container">
+      <label for="diaSemana">Dia da Semana:</label>
+      <select id="diaSemana"></select>
+
+      <label for="valorVenda">Valor Venda (R$):</label>
+      <input type="number" id="valorVenda" min="0" step="0.01" value="0" />
+
+      <label for="qtdPedidos">Quantidade Pedidos:</label>
+      <input type="number" id="qtdPedidos" min="0" step="1" value="0" />
+
+      <button id="btnSalvar">Salvar</button>
+      <button id="btnZerarSemana" title="Zerar e salvar os dados da semana">Zerar Semana</button>
+    </div>
+
+    <div class="totals">
+      <div class="card">
+        <h2 id="totalSemana">R$ 0,00</h2>
+        <p>Total da Semana</p>
+      </div>
+      <div class="card">
+        <h2 id="totalPedidos">0</h2>
+        <p>Pedidos Realizados</p>
+      </div>
+    </div>
+
+    <canvas id="graficoVendas" width="600" height="300"></canvas>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Dia</th>
+          <th>Data</th>
+          <th>Valor Venda (R$)</th>
+          <th>Qtd Pedidos</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaVendas"></tbody>
+    </table>
+  </section>
+
+  <aside id="sidebar">
+    <h2>Semanas Arquivadas</h2>
+    <div id="listaSemanas"></div>
+  </aside>
+</main>
+
+<footer>© 2025 Joana Salgados - Painel de controle</footer>
+
+<script>
+  const diasSemanaNomes = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+
+  // Dados da semana atual
+  let dadosVendas = JSON.parse(localStorage.getItem('dadosVendas')) || Array(7).fill(null).map(() => ({ valor: 0, pedidos: 0, data: null }));
+
+  // Semanas arquivadas
+  let semanasArquivadas = JSON.parse(localStorage.getItem('semanasArquivadas')) || [];
+
+  const diaSemanaSelect = document.getElementById('diaSemana');
+  const valorVendaInput = document.getElementById('valorVenda');
+  const qtdPedidosInput = document.getElementById('qtdPedidos');
+  const btnSalvar = document.getElementById('btnSalvar');
+  const btnZerarSemana = document.getElementById('btnZerarSemana');
+  const totalSemanaEl = document.getElementById('totalSemana');
+  const totalPedidosEl = document.getElementById('totalPedidos');
+  const tabelaVendasEl = document.getElementById('tabelaVendas');
+  const listaSemanasEl = document.getElementById('listaSemanas');
+  const ctx = document.getElementById('graficoVendas').getContext('2d');
+  let grafico;
+
+  // Helper para formatar data dd/mm
+  function formatarData(timestamp) {
+    if (!timestamp) return '-';
+    const d = new Date(timestamp);
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  }
+  // Helper para formatar data completa (ex: julho 2025)
+  function formatarMesAno(date) {
+    return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  }
+
+  // Calcula a data do domingo da semana base atual
+  function calcularDomingoBase() {
+    const hoje = new Date();
+    const diaHoje = hoje.getDay(); // 0 (domingo) a 6 (sábado)
+    const domingo = new Date(hoje);
+    domingo.setDate(hoje.getDate() - diaHoje);
+    domingo.setHours(0,0,0,0);
+    return domingo;
+  }
+  // Calcula a data real do dia da semana (segunda=0) para exibir
+  function dataDoDiaSemana(diaIndex) {
+    const domingo = calcularDomingoBase();
+    const dataDia = new Date(domingo);
+    dataDia.setDate(domingo.getDate() + diaIndex + 1);
+    return dataDia;
+  }
+
+  // Preenche o select com dias da semana com data
+  function preencherSelectDias() {
+    diaSemanaSelect.innerHTML = '';
+    for(let i=0; i<7; i++) {
+      const dataAtual = dataDoDiaSemana(i);
+      const dataFormatada = dataAtual.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      const option = document.createElement('option');
+      option.value = i;
+      option.textContent = `${diasSemanaNomes[i]} (${dataFormatada})`;
+      diaSemanaSelect.appendChild(option);
+    }
+  }
+
+  // Atualiza totais, tabela e gráfico
+  function atualizarPainel() {
+    const valores = dadosVendas.map(d => d.valor);
+    const pedidos = dadosVendas.map(d => d.pedidos);
+    const totalValor = valores.reduce((a,b) => a + b, 0);
+    const totalPedidos = pedidos.reduce((a,b) => a + b, 0);
+
+    totalSemanaEl.textContent = totalValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    totalPedidosEl.textContent = totalPedidos;
+
+    // Atualiza tabela
+    tabelaVendasEl.innerHTML = '';
+    for(let i=0; i<7; i++) {
+      const dataFormatada = formatarData(dadosVendas[i].data) === '-' ? dataDoDiaSemana(i).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) : formatarData(dadosVendas[i].data);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${diasSemanaNomes[i]}</td>
+        <td>${dataFormatada}</td>
+        <td>R$ ${dadosVendas[i].valor.toFixed(2)}</td>
+        <td>${dadosVendas[i].pedidos}</td>
+        <td><button class="delete-btn" data-dia="${i}">Apagar</button></td>
+      `;
+      tabelaVendasEl.appendChild(tr);
+    }
+
+    // Atualiza gráfico
+    if(grafico) grafico.destroy();
+    grafico = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: diasSemanaNomes,
+        datasets: [
+          {
+            label: 'Valor Vendido (R$)',
+            data: valores,
+            backgroundColor: '#ff6600'
+          },
+          {
+            label: 'Quantidade de Pedidos',
+            data: pedidos,
+            backgroundColor: '#ffaa55'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // Carrega dados no formulário ao mudar o dia
+  function carregarFormulario() {
+    const index = +diaSemanaSelect.value;
+    valorVendaInput.value = dadosVendas[index].valor.toFixed(2);
+    qtdPedidosInput.value = dadosVendas[index].pedidos;
+  }
+
+  // Atualiza a lista lateral com semanas arquivadas
+  function atualizarListaSemanas() {
+    listaSemanasEl.innerHTML = '';
+    if(semanasArquivadas.length === 0) {
+      listaSemanasEl.innerHTML = '<p>Nenhuma semana arquivada ainda.</p>';
+      return;
+    }
+    semanasArquivadas.forEach((semana, i) => {
+      const div = document.createElement('div');
+      div.className = 'semana-item';
+      const dataInicio = new Date(semana.dataInicio);
+      div.innerHTML = `
+        <div class="semana-info">
+          <div><strong>${formatarMesAno(dataInicio)}</strong></div>
+          <div class="semana-data">Semana de ${dataInicio.toLocaleDateString('pt-BR')}</div>
+          <div class="semana-total">R$ ${semana.total.toFixed(2)}</div>
+          <div class="semana-pedidos">Pedidos: ${semana.pedidos}</div>
+        </div>
+        <button class="semana-remove-btn" data-index="${i}" title="Remover essa semana arquivada">X</button>
+      `;
+      listaSemanasEl.appendChild(div);
+    });
+  }
+
+  // Salvar dados e atualizar painel
+  btnSalvar.addEventListener('click', () => {
+    const index = +diaSemanaSelect.value;
+    const valor = parseFloat(valorVendaInput.value) || 0;
+    const pedidos = parseInt(qtdPedidosInput.value) || 0;
+
+    dadosVendas[index] = { valor, pedidos, data: Date.now() };
+    localStorage.setItem('dadosVendas', JSON.stringify(dadosVendas));
+    atualizarPainel();
+    carregarFormulario();
+    alert(`Dados do ${diasSemanaNomes[index]} salvos!`);
+  });
+
+  // Zerar toda a semana salvando os dados atuais como semana arquivada
+  btnZerarSemana.addEventListener('click', () => {
+    if(confirm('Quer zerar e arquivar os dados atuais da semana?')) {
+      // Salva a semana arquivada com data base do domingo
+      const dataInicio = calcularDomingoBase().getTime();
+      const totalValor = dadosVendas.reduce((acc, d) => acc + d.valor, 0);
+      const totalPedidos = dadosVendas.reduce((acc, d) => acc + d.pedidos, 0);
+
+      semanasArquivadas.unshift({
+        dataInicio,
+        total: totalValor,
+        pedidos: totalPedidos
+      });
+      // Limita a lista a 10 semanas arquivadas para não ficar gigante (pode ajustar)
+      if (semanasArquivadas.length > 10) semanasArquivadas.pop();
+
+      localStorage.setItem('semanasArquivadas', JSON.stringify(semanasArquivadas));
+
+      // Zera os dados atuais
+      dadosVendas = Array(7).fill(null).map(() => ({ valor: 0, pedidos: 0, data: null }));
+      localStorage.setItem('dadosVendas', JSON.stringify(dadosVendas));
+
+      atualizarPainel();
+      carregarFormulario();
+      atualizarListaSemanas();
+      alert('Semana arquivada e dados zerados para nova semana!');
+    }
+  });
+
+  // Apagar um dia específico
+  tabelaVendasEl.addEventListener('click', e => {
+    if(e.target.classList.contains('delete-btn')) {
+      const dia = +e.target.dataset.dia;
+      if(confirm(`Quer apagar os dados de ${diasSemanaNomes[dia]}?`)) {
+        dadosVendas[dia] = { valor: 0, pedidos: 0, data: null };
+        localStorage.setItem('dadosVendas', JSON.stringify(dadosVendas));
+        atualizarPainel();
+        carregarFormulario();
+      }
+    }
+  });
+
+  // Remover semana arquivada da lista lateral
+  listaSemanasEl.addEventListener('click', e => {
+    if(e.target.classList.contains('semana-remove-btn')) {
+      const i = +e.target.dataset.index;
+      if(confirm('Remover essa semana arquivada?')) {
+        semanasArquivadas.splice(i,1);
+        localStorage.setItem('semanasArquivadas', JSON.stringify(semanasArquivadas));
+        atualizarListaSemanas();
+      }
+    }
+  });
+
+  // Inicialização
+  preencherSelectDias();
+  carregarFormulario();
+  atualizarPainel();
+  atualizarListaSemanas();
+
+  // Atualiza datas do select todo dia (ex: depois da meia-noite)
+  setInterval(() => {
+    preencherSelectDias();
+  }, 60 * 60 * 1000); // a cada 1h
+</script>
+</body>
+</html>
